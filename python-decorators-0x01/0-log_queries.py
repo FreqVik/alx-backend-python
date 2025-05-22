@@ -9,7 +9,8 @@ def log_queries():
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             query = args[0] if args else kwargs.get("query", "")
-            print(f"[SQL LOG] Executing query: {query}")
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"[{timestamp}] Executing query: {query}")
             return func(*args, **kwargs)
         return wrapper
     return decorator
