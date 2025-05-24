@@ -1,0 +1,7 @@
+.env
+env/
+ls.py
+ls2.py
+__pycache__/
+ls3.py
+users.db
