@@ -74,41 +74,18 @@ def memoize(fn: Callable) -> Callable:
 
     return property(memoized)
 
-"""
-def run_tests():
-    print("Running standalone tests...\n")
-
-    # Success cases
-    print("Test 1: Normal nested access")
-    nested = {"a": {"b": {"c": 1}}}
-    assert access_nested_map(nested, ["a", "b", "c"]) == 1
-    print("Passed ✔️")
-
-    print("Test 2: Root level access")
-    nested = {"x": 42}
-    assert access_nested_map(nested, ["x"]) == 42
-    print("Passed ✔️")
-
-    # KeyError - missing key
-    print("Test 3: Missing key (should raise KeyError)")
-    nested = {"a": {"b": 2}}
-    try:
-        access_nested_map(nested, ["a", "x"])
-    except KeyError as e:
-        print(f"Passed ✔️ (Caught KeyError: {e})")
-    else:
-        print("❌ Failed: Expected KeyError")
-
-    # KeyError - non-mapping mid-path
-    print("Test 4: Non-mapping mid-path (should raise KeyError)")
-    nested = {"a": 5}
-    try:
-        access_nested_map(nested, ["a", "b"])
-    except KeyError as e:
-        print(f"Passed ✔️ (Caught KeyError: {e})")
-    else:
-        print("❌ Failed: Expected KeyError")
-
 if __name__ == "__main__":
-    run_tests()
-"""
+    menu = get_json("http://api.menu.visit.menu/api/v1/menus/ed38921c-3f3e-45c6-aa98-08a0c8bc9e16")
+    print(menu)
+
+    # Demonstration of memoize decorator
+    class MyClass:
+        @memoize
+        def a_method(self):
+            print("a_method called")
+            return 42
+
+    print("\n--- Testing memoize decorator ---")
+    obj = MyClass()
+    print(obj.a_method)  # First call, prints message + result
+    print(obj.a_method)  # Second call, uses cached value, no print from method
