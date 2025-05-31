@@ -50,8 +50,10 @@ class Message(models.Model):
     message_id = models.UUIDField(primary_key=True, editable=False, unique=True, default=uuid4)
     conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
     sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
-    content = models.TextField()
+    message_body = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(auto_now=True)
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Message from {self.sender.username} in {self.conversation.chat_id}"
