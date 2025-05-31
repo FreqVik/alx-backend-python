@@ -1,11 +1,12 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status  # 👈 added status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from django_filters import rest_framework as filters     # 👈 added filters
+
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer, UserSerializer
-
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
