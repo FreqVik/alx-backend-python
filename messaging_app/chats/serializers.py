@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Conversation, Message, User
+from rest_framework.exceptions import ValidationError
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -19,10 +20,14 @@ class ConversationSerializer(serializers.ModelSerializer):
     chat_id = serializers.UUIDField(read_only=True)
     participants = UserSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
+    participant_count = serializers.SerializerMethodField()  # 👈 Added field
+
+    def get_participant_count(self, obj):
+        return obj.participants.count()
 
     class Meta:
         model = Conversation
-        fields = ['chat_id', 'participants', 'created_at']
+        fields = ['chat_id', 'participants', 'created_at', 'participant_count']
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -32,6 +37,12 @@ class MessageSerializer(serializers.ModelSerializer):
     content = serializers.CharField(required=True, allow_blank=False)
     timestamp = serializers.DateTimeField(read_only=True)
 
+    def validate_content(self, value):
+        if not value.strip():
+            raise ValidationError("Message content cannot be empty or whitespace.")
+        return value
+
     class Meta:
         model = Message
         fields = ['message_id', 'conversation', 'sender', 'content', 'timestamp']
+
