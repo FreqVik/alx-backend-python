@@ -30,7 +30,7 @@ class Conversation(models.Model):
     """
     Model representing a conversation between users.
     """
-    chat_id = models.UUIDField(primary_key=True, editable=False, unique=True, default=uuid4)
+    conversation_id = models.UUIDField(primary_key=True, editable=False, unique=True, default=uuid4)
     participants = models.ManyToManyField(User, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
 
