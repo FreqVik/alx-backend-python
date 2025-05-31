@@ -58,11 +58,10 @@ class GithubOrgClient:
             return False
         return has_license
 
-"""
+
 if __name__ == "__main__":
     org_client = GithubOrgClient("google")
     print(org_client.public_repos())
     print(org_client.public_repos(license="MIT"))
     print(org_client.public_repos(license="BSD-3-Clause"))
     print(org_client.public_repos(license="GPL-3.0"))
-"""
