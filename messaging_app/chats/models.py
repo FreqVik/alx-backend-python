@@ -5,7 +5,7 @@ from uuid import uuid4
 
 class User(AbstractUser):
 
-    id = models.UUIDField(primary_key=True, editable=False, unique=True, default=uuid4)
+    user_id = models.UUIDField(primary_key=True, editable=False, unique=True, default=uuid4)
     username = models.CharField(max_length=150, unique=True, blank=False, null=False)
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
