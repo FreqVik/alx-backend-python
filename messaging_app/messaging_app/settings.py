@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'chats',  # Custom app for messaging functionality
 ]
 
 # Custom app for messaging functionality
