@@ -62,6 +62,7 @@ class TestMemoize(unittest.TestCase):
     """
     test class for testing the memoize decorator.
     """
+
     def test_memoize(self):
         """
         Test that @memoize calls the method only once
@@ -72,6 +73,7 @@ class TestMemoize(unittest.TestCase):
             """
             A test class to demonstrate memoization.
             """
+
             def a_method(self):
                 return 42
 

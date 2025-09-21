@@ -74,6 +74,8 @@ def memoize(fn: Callable) -> Callable:
 
     return property(memoized)
 
+
+"""
 if __name__ == "__main__":
     menu = get_json("http://api.menu.visit.menu/api/v1/menus/ed38921c-3f3e-45c6-aa98-08a0c8bc9e16")
     print(menu)
@@ -89,3 +91,4 @@ if __name__ == "__main__":
     obj = MyClass()
     print(obj.a_method)  # First call, prints message + result
     print(obj.a_method)  # Second call, uses cached value, no print from method
+    """
