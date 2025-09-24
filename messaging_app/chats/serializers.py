@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Conversation, Message, User
-from rest_framework.exceptions import ValidationError
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -26,7 +25,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def validate_message_body(self, value):
         if not value.strip():
-            raise ValidationError("Message content cannot be empty or whitespace.")
+            raise serializers.ValidationError("Message content cannot be empty or whitespace.")
         return value
 
     class Meta:
