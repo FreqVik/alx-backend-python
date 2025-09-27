@@ -56,7 +56,8 @@ class Message(models.Model):
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Message from {self.sender.username} in {self.conversation.chat_id}"
+        return f"Message from {self.sender.username} in {self.conversation.conversation_id}"
+
 
     class Meta:
         verbose_name = 'Message'
