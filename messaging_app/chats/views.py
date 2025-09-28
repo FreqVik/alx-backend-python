@@ -1,13 +1,13 @@
+# chats/views.py
 from django.shortcuts import render
 from rest_framework import viewsets
-from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
 from .filters import MessageFilter
-
+from .pagination import MessagePagination
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
@@ -15,20 +15,12 @@ class ConversationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsParticipantOfConversation]
 
     def perform_create(self, serializer):
-        # Add the requesting user as a participant
         conversation = serializer.save()
         conversation.participants.add(self.request.user)
         conversation.save()
 
     def get_queryset(self):
-        # Only show conversations the user participates in
         return Conversation.objects.filter(participants=self.request.user)
-
-
-class MessagePagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 100
 
 
 class MessageViewSet(viewsets.ModelViewSet):
@@ -40,9 +32,11 @@ class MessageViewSet(viewsets.ModelViewSet):
     filterset_class = MessageFilter
 
     def perform_create(self, serializer):
-        # The permission class already checks if user is a participant
         serializer.save(sender=self.request.user)
 
     def get_queryset(self):
-        # Only show messages from conversations the user participates in
-        return Message.objects.filter(conversation__participants=self.request.user)
+        qs = Message.objects.filter(conversation__participants=self.request.user)
+        conversation_pk = self.kwargs.get('conversation_pk')
+        if conversation_pk:
+            qs = qs.filter(conversation__conversation_id=conversation_pk)
+        return qs.order_by('-timestamp')
