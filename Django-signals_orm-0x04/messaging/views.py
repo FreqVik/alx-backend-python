@@ -1,27 +1,47 @@
-from django.shortcuts import render
-
-# Create your views here.
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
-from django.contrib import messages
-from django.contrib.auth import logout
-from django.contrib.auth.models import User
+from .models import Message
 
 
 @login_required
-def delete_user(request):
+def conversation_view(request, receiver_id):
     """
-    Allow a logged-in user to delete their account.
-    All related data (messages, notifications, history)
-    will be cleaned automatically by post_delete signal.
+    Display a threaded conversation between the logged-in user and another user.
+    Optimized using select_related and prefetch_related.
     """
-    user = request.user
+    messages = Message.objects.filter(
+        sender=request.user,
+        receiver_id=receiver_id
+    ).select_related('sender', 'receiver', 'parent_message').prefetch_related('replies')
 
-    if request.method == "POST":
-        username = user.username
-        user.delete()
-        logout(request)
-        messages.success(request, f"Account '{username}' and all related data deleted successfully.")
-        return redirect("login")  # Redirect to login page or homepage
+    # Also include messages received from that user
+    received = Message.objects.filter(
+        sender_id=receiver_id,
+        receiver=request.user
+    ).select_related('sender', 'receiver', 'parent_message').prefetch_related('replies')
 
-    return redirect("profile")  # Default redirect if GET request
+    # Combine and order
+    all_messages = messages.union(received).order_by('timestamp')
+
+    context = {
+        "conversation": all_messages
+    }
+    return render(request, "messaging/conversation.html", context)
+
+
+@login_required
+def message_thread_view(request, message_id):
+    """
+    Fetch a single message and all its threaded replies recursively.
+    """
+    message = get_object_or_404(
+        Message.objects.select_related('sender', 'receiver').prefetch_related('replies'),
+        id=message_id
+    )
+
+    thread = message.get_thread()
+    context = {
+        "message": message,
+        "thread": thread,
+    }
+    return render(request, "messaging/thread.html", context)
