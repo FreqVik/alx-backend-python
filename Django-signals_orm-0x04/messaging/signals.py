@@ -5,9 +5,6 @@ from .models import Message, Notification, MessageHistory
 
 @receiver(post_save, sender=Message)
 def create_notification(sender, instance, created, **kwargs):
-    """
-    Automatically create a notification when a new message is sent.
-    """
     if created:
         Notification.objects.create(
             user=instance.receiver,
@@ -19,7 +16,7 @@ def create_notification(sender, instance, created, **kwargs):
 @receiver(pre_save, sender=Message)
 def log_message_edit(sender, instance, **kwargs):
     """
-    Before a message is saved (updated), log its old content into MessageHistory.
+    Log the old content and editor before message update.
     """
     if instance.pk:
         try:
@@ -30,6 +27,7 @@ def log_message_edit(sender, instance, **kwargs):
         if old_message.content != instance.content:
             MessageHistory.objects.create(
                 message=old_message,
-                old_content=old_message.content
+                old_content=old_message.content,
+                edited_by=instance.edited_by
             )
             instance.edited = True

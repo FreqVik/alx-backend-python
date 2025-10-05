@@ -8,8 +8,13 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     edited = models.BooleanField(default=False)
+    edited_by = models.ForeignKey(
+        User, related_name='edited_messages',
+        on_delete=models.SET_NULL, null=True, blank=True
+    )
+
     def __str__(self):
-        return f"From {self.sender.username} to {self.receiver.username} ({'edited' if self.edited else 'original'})"
+        return f"From {self.sender.username} to {self.receiver.username}"
 
 
 class Notification(models.Model):
@@ -23,10 +28,12 @@ class Notification(models.Model):
         return f"Notification for {self.user.username}: {self.text}"
 
 
-
 class MessageHistory(models.Model):
     message = models.ForeignKey(Message, related_name='history', on_delete=models.CASCADE)
     old_content = models.TextField()
+    edited_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL
+    )
     edited_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
