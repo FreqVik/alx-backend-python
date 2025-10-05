@@ -1,6 +1,4 @@
 from django.db import models
-
-# Create your models here.
 from django.contrib.auth.models import User
 
 
@@ -9,9 +7,9 @@ class Message(models.Model):
     receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-
+    edited = models.BooleanField(default=False)
     def __str__(self):
-        return f"From {self.sender.username} to {self.receiver.username}"
+        return f"From {self.sender.username} to {self.receiver.username} ({'edited' if self.edited else 'original'})"
 
 
 class Notification(models.Model):
@@ -23,3 +21,13 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}: {self.text}"
+
+
+
+class MessageHistory(models.Model):
+    message = models.ForeignKey(Message, related_name='history', on_delete=models.CASCADE)
+    old_content = models.TextField()
+    edited_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"History for message {self.message.id} at {self.edited_at}"
