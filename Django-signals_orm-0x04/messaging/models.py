@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from .managers import UnreadMessagesManager
 
 
 class Message(models.Model):
@@ -13,7 +14,6 @@ class Message(models.Model):
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="edited_messages"
     )
 
-    # Self-referential FK for threaded replies
     parent_message = models.ForeignKey(
         'self',
         null=True,
@@ -21,6 +21,9 @@ class Message(models.Model):
         on_delete=models.CASCADE,
         related_name='replies'
     )
+    read = models.BooleanField(default=False)
+    objects = models.Manager()
+    unread = UnreadMessagesManager()
 
     def __str__(self):
         return f"Message from {self.sender.username} to {self.receiver.username}"
@@ -34,7 +37,7 @@ class Message(models.Model):
 
         for reply in replies:
             thread.append(reply)
-            thread.extend(reply.get_thread())  # recursion to get nested replies
+            thread.extend(reply.get_thread())
 
         return thread
 
