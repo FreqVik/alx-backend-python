@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -e
+
+echo "Scaling messaging-app-deployment to 3 replicas..."
+kubectl scale deployment messaging-app-deployment --replicas=3
+
+echo "Waiting for all pods to be ready..."
+kubectl rollout status deployment/messaging-app-deployment
+
+echo "Verifying that multiple pods are running..."
+kubectl get pods -l app=messaging-app -o wide
+
+echo "Current deployment status:"
+kubectl get deployment messaging-app-deployment
+
+# ---------------------------------------------------------------
+# Load Testing Section
+# ---------------------------------------------------------------
+# This assumes your service is exposed internally (ClusterIP).
+# To test from outside the cluster, you can temporarily port-forward it.
+
+echo "Starting temporary port-forward for load testing..."
+kubectl port-forward svc/messaging-app-service 8000:8000 >/dev/null 2>&1 &
+PORT_FORWARD_PID=$!
+sleep 3
+
+echo "Running wrk load test for 30 seconds on http://127.0.0.1:8000/ ..."
+wrk -t4 -c50 -d30s http://127.0.0.1:8000/ || echo "wrk not installed or endpoint not reachable."
+
+# Kill the port-forward process after test
+kill $PORT_FORWARD_PID >/dev/null 2>&1 || true
+echo "Port-forward stopped."
+
+# ---------------------------------------------------------------
+# Resource Usage Monitoring
+# ---------------------------------------------------------------
+
+echo "Monitoring resource usage..."
+echo "If Metrics Server is not installed, install it via:"
+echo "  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+echo
+
+kubectl top pods || echo "Metrics Server not available. Unable to display resource usage."
+
+echo "Done! The app has been scaled and tested successfully."
