@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e
+DEPLOYMENT="messaging-app-blue"
+SERVICE="messaging-app-service"
+
+echo "Applying updated deployment (version 2.0)..."
+kubectl apply -f messaging_app/blue_deployment.yaml
+
+echo "Monitoring rolling update progress..."
+kubectl rollout status deployment/$DEPLOYMENT
+
+echo "Rolling update initiated successfully."
+
+# Get one pod IP via the service (optional port-forward if needed)
+echo "Checking if service is accessible..."
+kubectl port-forward svc/$SERVICE 8000:8000 >/dev/null 2>&1 &
+PORT_PID=$!
+sleep 3
+
+# Test app availability continuously using curl
+echo "Running curl tests during update (simulating uptime check)..."
+for i in {1..20}; do
+  RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/)
+  if [ "$RESPONSE" == "200" ]; then
+    echo "[$i] App responding (HTTP 200)"
+  else
+    echo "[$i] App not responding (HTTP $RESPONSE)"
+  fi
+  sleep 2
+done
+
+# Kill port-forward
+kill $PORT_PID >/dev/null 2>&1 || true
+echo "Port-forward stopped."
+
+echo "Verifying rolling update completion..."
+kubectl get pods -l app=messaging-app -o wide
+
+echo "Rolling update completed successfully — version 2.0 deployed."
