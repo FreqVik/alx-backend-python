@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -e
+
+# Function to start the Kubernetes cluster
+cluster() {
+    echo "Starting Kubernetes cluster using Minikube..."
+    minikube start --driver=docker
+    echo "Cluster started."
+}
+
+# Function to verify kubernetes cluster is running
+verify_active_cluster() {
+    if minikube status | grep -q "host: Running"; then
+        echo "Kubernetes cluster is running."
+    else
+        echo "Kubernetes cluster is not running. Exiting."
+        exit 1
+    fi
+}
+
+# Function to retrieve available pods using kubectl cluster-info.
+get_pods() {
+    kubectl get pods --all-namespaces
+}
+
+
+
+main() {
+    cluster
+    verify_active_cluster
+    get_pods
+    echo "All operations completed successfully."
+}
+main "$@"
