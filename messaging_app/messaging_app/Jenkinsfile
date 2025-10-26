@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    environment {
+        VENV_DIR = 'venv'
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/your-username/messaging-app.git',
+                    credentialsId: 'github-creds'
+            }
+        }
+
+        stage('Setup Python Environment') {
+            steps {
+                sh '''
+                    python3 -m venv $VENV_DIR
+                    . $VENV_DIR/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    pytest --junitxml=report.xml --html=report.html --self-contained-html
+                '''
+            }
+        }
+
+        stage('Publish Test Report') {
+            steps {
+                publishHTML(target: [
+                    allowMissing: false,
+                    keepAll: true,
+                    reportDir: '.',
+                    reportFiles: 'report.html',
+                    reportName: 'Pytest Report'
+                ])
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'report.*', fingerprint: true
+        }
+    }
+}
